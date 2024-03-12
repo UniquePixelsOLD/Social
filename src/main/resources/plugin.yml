@@ -1,7 +1,9 @@
 name: $name
 version: $version
-main: net.uniquepixels.game.template.GameTemplate
+main: net.uniquepixels.friend.FriendSystem
 description: $description
 depend: [ PaperCore ]
 author: DasShorty
 api-version: "$apiVersion"
+commands:
+  friend:
