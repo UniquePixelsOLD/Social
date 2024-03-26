@@ -1,62 +1,94 @@
 package net.uniquepixels.social.friends;
 
 import com.google.gson.Gson;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Updates;
-import net.uniquepixels.coreapi.database.MongoDatabase;
-import org.bson.Document;
+import okhttp3.*;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
-public record FriendManager(MongoDatabase database) {
+public class FriendManager {
 
-    public boolean addFriend(FriendDto player, FriendDto newFriend) {
+  private final OkHttpClient httpClient = new OkHttpClient();
+  private final String requestUrl = System.getenv("BASE_URL") + "/friends/";
 
-        if (player.friends().contains(newFriend.playerId()) ||
-        newFriend.friends().contains(player.playerId())) {
-            return false;
-        }
+  public CompletableFuture<Boolean> addFriend(UUID dto1, UUID dto2) {
 
-        player.friends().add(newFriend.playerId());
-        newFriend.friends().add(player.playerId());
+    CompletableFuture<Boolean> future = new CompletableFuture<>();
 
-        this.saveDto(player);
-        this.saveDto(newFriend);
+    Request url = new Request.Builder()
+      .put(RequestBody.create("", MediaType.get("application/json")))
+      .url(this.requestUrl + dto1.toString() + "/add/" + dto2.toString()).build();
 
-        return true;
+    try {
+      Response execute = this.httpClient.newCall(url).execute();
+      future.complete(execute.code() == 200);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
-    private boolean existsDto(UUID playerId) {
-        return this.collection().countDocuments(Filters.eq("playerId", playerId.toString())) > 0L;
+    return future;
+  }
+
+  public CompletableFuture<Boolean> removeFriend(FriendDto dto1, FriendDto dto2) {
+
+    CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+    Request url = new Request.Builder()
+      .put(RequestBody.create(dto1.toPlain().toString(), MediaType.get("application/json")))
+      .url(this.requestUrl + dto1.playerId().toString() + "/add/" + dto2.playerId().toString()).build();
+
+    try {
+      Response execute = this.httpClient.newCall(url).execute();
+      future.complete(execute.code() == 200);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
-    private void saveDto(FriendDto dto) {
+    return future;
+  }
 
-        if (!this.existsDto(dto.playerId())) {
-            this.collection().insertOne(new Gson().fromJson(dto.toPlain().toString(), Document.class));
-            return;
-        }
+  public Optional<FriendDto> getFriendDto(UUID uuid) {
 
-        this.collection().updateOne(Filters.eq("playerId", dto.playerId().toString()),
-                Updates.set("friends", dto.toPlain().friends()));
+    Request url = new Request.Builder()
+      .post(RequestBody.create("", MediaType.get("application/json")))
+      .url(this.requestUrl + "create/" + uuid.toString()).build();
 
+    try {
+      Response execute = this.httpClient.newCall(url).execute();
+
+      if (execute.code() != 200 && execute.body() == null) {
+        return Optional.empty();
+      }
+
+      FriendDto friendDto = new Gson().fromJson(
+        execute.body().string(), FriendDto.class);
+
+      return Optional.of(friendDto);
+
+    } catch (IOException e) {
+      e.fillInStackTrace();
     }
 
-    private MongoCollection<Document> collection() {
-        return this.database.collection("friends", Document.class);
+    return Optional.empty();
+  }
+
+  public boolean createFriendDto(FriendDto dto) {
+
+    Request.Builder url = new Request.Builder()
+      .post(RequestBody.create(dto.toPlain().toString(), MediaType.get("application/json")))
+      .url(this.requestUrl + "create/" + dto.playerId().toString());
+
+    try {
+      Response execute = this.httpClient.newCall(url.build()).execute();
+
+      return execute.code() == 202;
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
-    public Optional<FriendDto> getDto(UUID playerId) {
-
-        Document first = this.collection().find(Filters.eq("playerId", playerId.toString())).first();
-
-        if (first == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new Gson().fromJson(first.toJson(), FriendDto.PlainFriendDto.class).toNormal());
-    }
+  }
 
 }

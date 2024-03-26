@@ -28,8 +28,11 @@ dependencies {
   // paperweight.foliaDevBundle("1.20.4-R0.1-SNAPSHOT")
   // paperweight.devBundle("com.example.paperfork", "1.20.4-R0.1-SNAPSHOT")
 
-  compileOnly("net.uniquepixels:core:latest")
-  compileOnly("net.uniquepixels:core-api:latest")
+  compileOnly("net.uniquepixels:core:1.0.3")
+  compileOnly("net.uniquepixels:core-api:1.0.1")
+
+  // OkHttp Client
+  implementation("com.squareup.okhttp3:okhttp:4.12.0") // https://square.github.io/okhttp/
 }
 
 tasks {

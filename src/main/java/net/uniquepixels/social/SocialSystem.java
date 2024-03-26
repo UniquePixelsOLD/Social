@@ -3,12 +3,13 @@ package net.uniquepixels.social;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationRegistry;
+import net.uniquepixels.core.paper.chat.chatinput.ChatInputManager;
+import net.uniquepixels.core.paper.gui.backend.UIHolder;
 import net.uniquepixels.social.friends.FriendCommand;
+import net.uniquepixels.social.friends.FriendManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import net.uniquepixels.core.paper.gui.backend.UIHolder;
-import net.uniquepixels.core.paper.chat.chatinput.ChatInputManager;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -45,11 +46,13 @@ public class SocialSystem extends JavaPlugin {
       return;
 
     /*
-    * Use ChatInputManager to get the next chat message from player and add actions after a message has been sent
-    * */
+     * Use ChatInputManager to get the next chat message from player and add actions after a message has been sent
+     * */
     ChatInputManager chatInputManager = chatProvider.getProvider();
 
-    getCommand("friend").setExecutor(new FriendCommand(uiHolder));
+    FriendManager friendManager = new FriendManager();
+
+    getCommand("friend").setExecutor(new FriendCommand(uiHolder, friendManager));
 
 
   }

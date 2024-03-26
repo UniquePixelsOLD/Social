@@ -1,9 +1,11 @@
 name: $name
 version: $version
-main: net.uniquepixels.friend.FriendSystem
+main: net.uniquepixels.social.SocialSystem
 description: $description
 depend: [ PaperCore ]
 author: DasShorty
+libraries:
+  - com.squareup.okhttp3:okhttp:4.12.0
 api-version: "$apiVersion"
 commands:
   friend:
