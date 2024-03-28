@@ -32,7 +32,7 @@ public class FriendCommand implements CommandExecutor {
       player.sendMessage("Success!");
     }
 
-    this.uiHolder.open(new FriendUI(this.uiHolder, this.friendManager), player);
+    this.uiHolder.open(new FriendUI(this.uiHolder, this.friendManager, player), player);
 
     return true;
   }

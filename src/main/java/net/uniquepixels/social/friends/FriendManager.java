@@ -52,8 +52,8 @@ public class FriendManager {
   public Optional<FriendDto> getFriendDto(UUID uuid) {
 
     Request url = new Request.Builder()
-      .post(RequestBody.create("", MediaType.get("application/json")))
-      .url(this.requestUrl + "create/" + uuid.toString()).build();
+      .get()
+      .url(this.requestUrl + uuid.toString()).build();
 
     try {
       Response execute = this.httpClient.newCall(url).execute();
