@@ -1,6 +1,7 @@
 package net.uniquepixels.social.friends;
 
 import net.uniquepixels.core.paper.gui.backend.UIHolder;
+import net.uniquepixels.coreapi.player.PlayerManager;
 import net.uniquepixels.social.friends.ui.FriendUI;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,10 +15,12 @@ public class FriendCommand implements CommandExecutor {
 
   private final UIHolder uiHolder;
   private final FriendManager friendManager;
+  private final PlayerManager playerManager;
 
-  public FriendCommand(UIHolder uiHolder, FriendManager friendManager) {
+  public FriendCommand(UIHolder uiHolder, FriendManager friendManager, PlayerManager playerManager) {
     this.uiHolder = uiHolder;
     this.friendManager = friendManager;
+    this.playerManager = playerManager;
   }
 
   @Override
@@ -32,7 +35,7 @@ public class FriendCommand implements CommandExecutor {
       player.sendMessage("Success!");
     }
 
-    this.uiHolder.open(new FriendUI(this.uiHolder, this.friendManager, player), player);
+    this.uiHolder.open(new FriendUI(this.uiHolder, this.friendManager, player, this.playerManager), player);
 
     return true;
   }

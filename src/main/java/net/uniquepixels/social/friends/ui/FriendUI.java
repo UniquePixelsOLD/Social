@@ -16,6 +16,8 @@ import net.uniquepixels.core.paper.gui.types.chest.ChestUI;
 import net.uniquepixels.core.paper.item.DefaultItemStackBuilder;
 import net.uniquepixels.core.paper.item.skull.SkullItemStackBuilder;
 import net.uniquepixels.coreapi.ListPaginator;
+import net.uniquepixels.coreapi.player.NetworkPlayer;
+import net.uniquepixels.coreapi.player.PlayerManager;
 import net.uniquepixels.social.friends.FriendDto;
 import net.uniquepixels.social.friends.FriendManager;
 import org.bukkit.Bukkit;
@@ -29,14 +31,16 @@ import java.util.*;
 public class FriendUI extends ChestUI {
   private final UIHolder uiHolder;
   private final FriendManager friendManager;
+  private final PlayerManager playerManager;
   int page = 0;
 
   ListPaginator<UUID> paginator;
 
-  public FriendUI(UIHolder uiHolder, FriendManager friendManager, Player player) {
+  public FriendUI(UIHolder uiHolder, FriendManager friendManager, Player player, PlayerManager playerManager) {
     super(Component.translatable("friend.friends").color(NamedTextColor.DARK_GRAY), UIRow.CHEST_ROW_6);
     this.uiHolder = uiHolder;
     this.friendManager = friendManager;
+    this.playerManager = playerManager;
 
     Optional<FriendDto> optional = this.friendManager.getFriendDto(player.getUniqueId());
 
@@ -127,13 +131,28 @@ public class FriendUI extends ChestUI {
   }
 
   private Component generateOnlineOn(Locale locale, OfflinePlayer player) {
-    return UIStyle.translate(locale, "online")
-      .color(NamedTextColor.GREEN)
-      .style(builder -> builder.decoration(TextDecoration.ITALIC, false))
-      .appendSpace()
-      .append(UIStyle.translate(locale, "on").color(TextStyle.PRIMARY_COLOR))
-      .appendSpace()
-      .append(Component.text("Lobby-1").color(TextStyle.WHITE_COLOR));
+
+    Optional<NetworkPlayer> optional = this.playerManager.getNetworkPlayer(player.getUniqueId());
+    if (optional.isEmpty()) {
+      return UIStyle.translate(locale, "friend.status.error").color(NamedTextColor.RED);
+    }
+
+    NetworkPlayer networkPlayer = optional.get();
+    String server = networkPlayer.getServer();
+
+    if (networkPlayer.isOnline()) {
+      return UIStyle.translate(locale, "online")
+        .color(NamedTextColor.GREEN)
+        .style(builder -> builder.decoration(TextDecoration.ITALIC, false))
+        .appendSpace()
+        .append(UIStyle.translate(locale, "on").color(TextStyle.PRIMARY_COLOR))
+        .appendSpace()
+        .append(Component.text(server).color(TextStyle.WHITE_COLOR));
+    } else {
+      return UIStyle.translate(locale, "offline")
+        .color(NamedTextColor.RED)
+        .style(builder -> builder.decoration(TextDecoration.ITALIC, true));
+    }
   }
 
   private Component generateItemName(OfflinePlayer player) {
